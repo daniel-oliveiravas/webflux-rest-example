@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Vendor {
 
     @Id
-    private String Id;
+    private String id;
 
     private String firstName;
     private String lastName;
