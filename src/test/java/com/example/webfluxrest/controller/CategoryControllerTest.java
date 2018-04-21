@@ -6,11 +6,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
+import org.reactivestreams.Publisher;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.any;
 
 public class CategoryControllerTest {
 
@@ -18,6 +21,7 @@ public class CategoryControllerTest {
     private CategoryRepository categoryRepository;
     private CategoryController categoryController;
 
+    private static String CONTROLLER_BASE_URL = "/api/v1/categories/";
 
     @Before
     public void setUp() {
@@ -37,7 +41,7 @@ public class CategoryControllerTest {
                 ));
 
         webTestClient.get()
-                .uri("/api/v1/categories/")
+                .uri(CONTROLLER_BASE_URL)
                 .exchange()
                 .expectBodyList(Category.class)
                 .hasSize(2);
@@ -50,8 +54,22 @@ public class CategoryControllerTest {
                 .willReturn(Mono.just(Category.builder().id(categoryId).build()));
 
         webTestClient.get()
-                .uri("/api/v1/categories/" + categoryId)
+                .uri(CONTROLLER_BASE_URL + categoryId)
                 .exchange()
                 .expectBodyList(Category.class);
+    }
+
+    @Test
+    public void createCategory() {
+        BDDMockito.given(categoryRepository.saveAll(any(Publisher.class)))
+                .willReturn(Flux.just(Category.builder().id("id").build()));
+
+        Mono<Category> categoryMono = Mono.just(Category.builder().id("id").build());
+        webTestClient.post()
+                .uri(CONTROLLER_BASE_URL)
+                .body(categoryMono, Category.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
     }
 }
