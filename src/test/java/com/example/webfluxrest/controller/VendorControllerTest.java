@@ -1,19 +1,24 @@
 package com.example.webfluxrest.controller;
 
+import com.example.webfluxrest.domain.Category;
 import com.example.webfluxrest.domain.Vendor;
 import com.example.webfluxrest.repository.VendorRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
+import org.reactivestreams.Publisher;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+
 public class VendorControllerTest {
 
+    public static final String CONTOLLER_BASE_URL = "/api/v1/vendors/";
     private WebTestClient webTestClient;
     private VendorRepository vendorRepository;
     private VendorController vendorController;
@@ -37,7 +42,7 @@ public class VendorControllerTest {
                 ));
 
         webTestClient.get()
-                .uri("/api/v1/vendors/")
+                .uri(CONTOLLER_BASE_URL)
                 .exchange()
                 .expectBodyList(Vendor.class)
                 .hasSize(2);
@@ -51,8 +56,22 @@ public class VendorControllerTest {
                 .willReturn(Mono.just(Vendor.builder().id(vendorId).build()));
 
         webTestClient.get()
-                .uri("/api/v1/vendors/" + vendorId)
+                .uri(CONTOLLER_BASE_URL + vendorId)
                 .exchange()
                 .expectBodyList(Vendor.class);
+    }
+
+    @Test
+    public void createVendor() {
+        BDDMockito.given(vendorRepository.saveAll(any(Publisher.class)))
+                .willReturn(Flux.just(Category.builder().build()));
+
+        Mono<Vendor> vendorMono = Mono.just(Vendor.builder().id("id").build());
+        webTestClient.post()
+                .uri(CONTOLLER_BASE_URL)
+                .body(vendorMono, Vendor.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
     }
 }
