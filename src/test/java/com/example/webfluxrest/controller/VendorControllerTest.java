@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 public class VendorControllerTest {
 
-    public static final String CONTOLLER_BASE_URL = "/api/v1/vendors/";
+    private static final String CONTOLLER_BASE_URL = "/api/v1/vendors/";
     private WebTestClient webTestClient;
     private VendorRepository vendorRepository;
     private VendorController vendorController;
