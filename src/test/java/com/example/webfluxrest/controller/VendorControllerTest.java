@@ -1,6 +1,5 @@
 package com.example.webfluxrest.controller;
 
-import com.example.webfluxrest.domain.Category;
 import com.example.webfluxrest.domain.Vendor;
 import com.example.webfluxrest.repository.VendorRepository;
 import org.junit.Before;
@@ -64,7 +63,7 @@ public class VendorControllerTest {
     @Test
     public void createVendor() {
         BDDMockito.given(vendorRepository.saveAll(any(Publisher.class)))
-                .willReturn(Flux.just(Category.builder().build()));
+                .willReturn(Flux.just(Vendor.builder().build()));
 
         Mono<Vendor> vendorMono = Mono.just(Vendor.builder().id("id").build());
         webTestClient.post()
@@ -73,5 +72,19 @@ public class VendorControllerTest {
                 .exchange()
                 .expectStatus()
                 .isCreated();
+    }
+
+    @Test
+    public void updateVendor() {
+        BDDMockito.given(vendorRepository.save(any(Vendor.class)))
+                .willReturn(Mono.just(Vendor.builder().build()));
+
+        Mono<Vendor> vendorMono = Mono.just(Vendor.builder().id("id").build());
+        webTestClient.put()
+                .uri(CONTOLLER_BASE_URL + "id")
+                .body(vendorMono, Vendor.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
     }
 }
