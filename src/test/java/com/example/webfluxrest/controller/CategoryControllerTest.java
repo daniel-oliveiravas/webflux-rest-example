@@ -14,6 +14,8 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 
 public class CategoryControllerTest {
 
@@ -87,5 +89,49 @@ public class CategoryControllerTest {
                 .exchange()
                 .expectStatus()
                 .isOk();
+    }
+
+    @Test
+    public void patchCategory() {
+        String description = "description";
+        BDDMockito.given(categoryRepository.findById(anyString()))
+                .willReturn(Mono.just(Category.builder().description(description).build()));
+
+        BDDMockito.given(categoryRepository.save(any(Category.class)))
+                .willReturn(Mono.just(Category.builder().build()));
+
+        Mono<Category> categoryToUpdate = Mono.just(Category.builder().description(description).build());
+
+        webTestClient.patch()
+                .uri(CONTROLLER_BASE_URL + "id")
+                .body(categoryToUpdate, Category.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        BDDMockito.verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    public void patchCategoryChangingDescription() {
+        String categoryId = "id";
+        BDDMockito.given(categoryRepository.findById(anyString()))
+                .willReturn(Mono.just(Category.builder().description("Description").build()));
+
+        String newDescription = "new";
+        BDDMockito.given(categoryRepository.save(any(Category.class)))
+                .willReturn(Mono.just(Category.builder().description(newDescription).build()));
+
+        Mono<Category> categoryToUpdate = Mono.just(Category.builder().id(categoryId)
+                .description(newDescription).build());
+
+        webTestClient.patch()
+                .uri(CONTROLLER_BASE_URL + categoryId)
+                .body(categoryToUpdate, Category.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        BDDMockito.verify(categoryRepository).save(any());
     }
 }
