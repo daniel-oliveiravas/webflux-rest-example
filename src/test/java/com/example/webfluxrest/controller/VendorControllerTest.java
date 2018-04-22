@@ -14,6 +14,8 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 
 public class VendorControllerTest {
 
@@ -86,5 +88,46 @@ public class VendorControllerTest {
                 .exchange()
                 .expectStatus()
                 .isOk();
+    }
+
+    @Test
+    public void patchVendorNoChanges() {
+        String firstName = "firstName";
+        String lastName = "lastName";
+
+        BDDMockito.given(vendorRepository.findById(anyString()))
+                .willReturn(Mono.just(Vendor.builder().firstName(firstName).lastName(lastName).build()));
+
+        Mono<Vendor> vendorMono = Mono.just(Vendor.builder().firstName(firstName).lastName(lastName).build());
+
+        webTestClient.patch()
+                .uri(CONTOLLER_BASE_URL + "id")
+                .body(vendorMono, Vendor.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        BDDMockito.verify(vendorRepository, never()).save(any());
+    }
+
+    @Test
+    public void patchVendorChangingFirstName() {
+        String firstName = "firstName";
+        String lastName = "lastName";
+
+        BDDMockito.given(vendorRepository.findById(anyString()))
+                .willReturn(Mono.just(Vendor.builder().firstName(firstName).lastName(lastName).build()));
+
+        String newFirstName = "new first name";
+        Mono<Vendor> vendorMono = Mono.just(Vendor.builder().firstName(newFirstName).lastName(lastName).build());
+
+        webTestClient.patch()
+                .uri(CONTOLLER_BASE_URL + "id")
+                .body(vendorMono, Vendor.class)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        BDDMockito.verify(vendorRepository).save(any());
     }
 }
