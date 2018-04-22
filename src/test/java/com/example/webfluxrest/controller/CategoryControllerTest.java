@@ -15,7 +15,9 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 public class CategoryControllerTest {
 
@@ -36,7 +38,7 @@ public class CategoryControllerTest {
     public void getAllCategories() {
         String categoryDescription = "Test category";
         String secondDescription = "Second category";
-        BDDMockito.given(categoryRepository.findAll())
+        given(categoryRepository.findAll())
                 .willReturn(Flux.just(
                         Category.builder().description(categoryDescription).build(),
                         Category.builder().description(secondDescription).build()
@@ -52,7 +54,7 @@ public class CategoryControllerTest {
     @Test
     public void getById() {
         String categoryId = UUID.randomUUID().toString();
-        BDDMockito.given(categoryRepository.findById(categoryId))
+        given(categoryRepository.findById(categoryId))
                 .willReturn(Mono.just(Category.builder().id(categoryId).build()));
 
         webTestClient.get()
@@ -63,7 +65,7 @@ public class CategoryControllerTest {
 
     @Test
     public void createCategory() {
-        BDDMockito.given(categoryRepository.saveAll(any(Publisher.class)))
+        given(categoryRepository.saveAll(any(Publisher.class)))
                 .willReturn(Flux.just(Category.builder().id("id").build()));
 
         Mono<Category> categoryMono = Mono.just(Category.builder().id("id").build());
@@ -78,7 +80,7 @@ public class CategoryControllerTest {
     @Test
     public void updateCategory() {
         String categoryId = "id";
-        BDDMockito.given(categoryRepository.save(any(Category.class)))
+        given(categoryRepository.save(any(Category.class)))
                 .willReturn(Mono.just(Category.builder().build()));
 
         Mono<Category> categoryToUpdate = Mono.just(Category.builder().id(categoryId).build());
@@ -94,10 +96,10 @@ public class CategoryControllerTest {
     @Test
     public void patchCategory() {
         String description = "description";
-        BDDMockito.given(categoryRepository.findById(anyString()))
+        given(categoryRepository.findById(anyString()))
                 .willReturn(Mono.just(Category.builder().description(description).build()));
 
-        BDDMockito.given(categoryRepository.save(any(Category.class)))
+        given(categoryRepository.save(any(Category.class)))
                 .willReturn(Mono.just(Category.builder().build()));
 
         Mono<Category> categoryToUpdate = Mono.just(Category.builder().description(description).build());
@@ -109,17 +111,17 @@ public class CategoryControllerTest {
                 .expectStatus()
                 .isOk();
 
-        BDDMockito.verify(categoryRepository, never()).save(any());
+        verify(categoryRepository, never()).save(any());
     }
 
     @Test
     public void patchCategoryChangingDescription() {
         String categoryId = "id";
-        BDDMockito.given(categoryRepository.findById(anyString()))
+        given(categoryRepository.findById(anyString()))
                 .willReturn(Mono.just(Category.builder().description("Description").build()));
 
         String newDescription = "new";
-        BDDMockito.given(categoryRepository.save(any(Category.class)))
+        given(categoryRepository.save(any(Category.class)))
                 .willReturn(Mono.just(Category.builder().description(newDescription).build()));
 
         Mono<Category> categoryToUpdate = Mono.just(Category.builder().id(categoryId)
@@ -132,6 +134,6 @@ public class CategoryControllerTest {
                 .expectStatus()
                 .isOk();
 
-        BDDMockito.verify(categoryRepository).save(any());
+        verify(categoryRepository).save(any());
     }
 }
